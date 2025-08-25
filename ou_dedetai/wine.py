@@ -406,11 +406,18 @@ def install_msi(app: App):
     # Since the launcher only prompts for EULA, and askes where to install 
     # (which is pointless as it's in it's own wine prefix), we can just skip the interaction
     # entirely once we confirm the user has agreed to EULA (for Faithlife's sake)
+
+    # Ensure assume yes is set to false to force the user to be prompted.
+    # There is a separate CLI flag to explicitly agree to EULA.
+    # Use that for non-interactive installs
+    original_assume_yes = app.conf._overrides.assume_yes
+    app.conf._overrides.assume_yes = False
     if (
         app.conf._overrides.agreed_to_faithlife_terms or
         app.approve_or_exit("Do you agree to Faithlife's EULA? https://faithlife.com/terms")
     ):
         exe_args.append("/passive")
+    app.conf._overrides.assume_yes = original_assume_yes
 
     # Add MST transform if needed
     release_version = app.conf.installed_faithlife_product_release or app.conf.faithlife_product_release
